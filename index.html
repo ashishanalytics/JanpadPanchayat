@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janpad Panchayat Takhatpur Portal</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,Segoe UI}
+body{background:#f4f6fb;color:#222}
+.hidden{display:none}
+
+/* Dark Mode */
+.dark{background:#0f172a;color:#e5e7ef}
+.dark .card,.dark .topbar,.dark .sidebar,.dark .main,.dark table,.dark .report-page{background:#111827;color:#e5e7ef;border-color:#30363f}
+.dark input,.dark select,.dark textarea{background:#020617;color:#fff;border-color:#334155}
+
+/* Login */
+.center{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.card{background:#fff;padding:28px;border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.15);max-width:450px;width:95%}
+input,select,textarea{width:100%;padding:9px 12px;border-radius:10px;border:1px solid #ccc;margin:6px 0 10px}
+button{padding:10px 16px;border:none;border-radius:10px;background:#2563eb;color:#fff;cursor:pointer}
+
+/* Topbar */
+.topbar{background:#fff;padding:12px 16px;border-bottom:1px solid #e6e6e6;display:flex;align-items:center;justify-content:space-between}
+.menu-btn{font-size:22px;cursor:pointer}
+
+/* Sidebar */
+.sidebar{position:fixed;left:-250px;top:0;height:100vh;width:230px;background:#fff;border-right:1px solid #e6e6e6;padding:16px;transition:.3s}
+.sidebar.show{left:0}
+.sidebar p{margin:12px 0;cursor:pointer}
+
+/* Main */
+.main{padding:18px}
+
+/* GOVT PRINT REPORT */
+.report-page{background:white;padding:20px}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid black;padding:6px 8px;font-size:13px}
+th{text-align:center;background:#f3f4f6}
+.signature{margin-top:25px;display:flex;justify-content:space-between}
+
+/* Print mode */
+@media print{
+ body *{visibility:hidden}
+ #printArea,#printArea *{visibility:visible}
+ #printArea{position:absolute;top:0;left:0;width:100%}
+}
+
+.row{display:flex;gap:10px}
+.row input{flex:1}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="center">
+ <div class="card">
+  <h3 style="text-align:center">जनपद पंचायत तखतपुर</h3>
+  <small>जिला बिलासपुर, छत्तीसगढ़</small><br><br>
+  उपयोगकर्ता नाम
+  <input id="user">
+  पासवर्ड
+  <input id="pass" type="password">
+  <button onclick="login()">लॉगिन करें</button>
+ </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+<div class="topbar">
+ <span class="menu-btn" onclick="side.classList.toggle('show')">☰</span>
+ <strong>Janpad Panchayat Takhatpur Portal</strong>
+ <button onclick="toggleDark()">🌙</button>
+</div>
+
+<div id="side" class="sidebar">
+ <p onclick="show('form')">📝 Data Entry</p>
+ <p onclick="show('vouchers')">📘 Vouchers Entry</p>
+ <p onclick="show('report')">📄 Cash Book Report</p>
+ <p onclick="logout()">🚪 Logout</p>
+</div>
+
+<div class="main">
+
+<!-- FORM -->
+<div id="form">
+<h3>उपयोगिता / पूर्णता प्रमाण पत्र</h3>
+
+<label>कार्य का नाम</label>
+<input id="work">
+
+<label>ग्राम पंचायत</label>
+<input id="gp">
+
+<label>योजना</label>
+<input id="scheme">
+
+<label>स्वीकृत राशि (₹)</label>
+<input id="approved">
+
+<label>वित्तीय वर्ष</label>
+<input id="fy">
+
+<label>उपयंत्री का नाम</label>
+<input id="engineer">
+
+<label>अधिकारी का नाम</label>
+<input id="officer">
+
+<button onclick="saveForm()">💾 Save</button>
+</div>
+
+<!-- VOUCHERS -->
+<div id="vouchers" class="hidden">
+<h3>Voucher Entry (Receipts & Payments)</h3>
+
+<button onclick="addRow('receipts')">➕ Add Receipt</button>
+<table id="receiptsTable">
+<tr><th>Date</th><th>Voucher</th><th>Head</th><th>Amount</th><th>X</th></tr>
+<tbody></tbody>
+</table>
+
+<button onclick="addRow('payments')">➕ Add Payment</button>
+<table id="paymentsTable">
+<tr><th>Date</th><th>Voucher</th><th>Head</th><th>Amount</th><th>X</th></tr>
+<tbody></tbody>
+</table>
+
+<button onclick="saveVouchers()">💾 Save Vouchers</button>
+<button onclick="exportData()">⬇ Export CSV</button>
+</div>
+
+<!-- REPORT -->
+<div id="report" class="hidden">
+<button onclick="generate()">Generate Report</button>
+<button onclick="window.print()">🖨 Print</button>
+
+<div id="printArea" class="report-page hidden">
+
+<center>
+<h3>CASH BOOK – JANPAD PANCHAYAT TAKHATPUR</h3>
+<b>Financial Year: <span id="r_fy"></span></b><br>
+<b>Scheme: <span id="r_scheme"></span></b><br>
+<b>Gram Panchayat: <span id="r_gp"></span></b>
+</center>
+<br>
+
+<table>
+<tr>
+<th colspan="5">Receipts</th>
+<th colspan="5">Payments</th>
+</tr>
+
+<tr>
+<th>Date</th><th>Voucher</th><th>Head</th><th colspan="2">Amount</th>
+<th>Date</th><th>Voucher</th><th>Head</th><th colspan="2">Amount</th>
+</tr>
+
+<tbody id="tableData"></tbody>
+
+<tr>
+<th colspan="3">Total Receipts</th>
+<th colspan="2" id="totalR"></th>
+<th colspan="3">Total Payments</th>
+<th colspan="2" id="totalP"></th>
+</tr>
+
+<tr>
+<th colspan="3">Closing Balance</th>
+<th colspan="2" id="closing"></th>
+<th colspan="3">Closing Balance</th>
+<th colspan="2" id="closing2"></th>
+</tr>
+</table>
+
+<div class="signature">
+<div>सारपंच</div>
+<div>उपयंत्री / तक.सहा</div>
+<div>मुख्य कार्यपालन अधिकारी</div>
+</div>
+
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+/* LOGIN */
+function login(){
+ if(user.value==="admin" && pass.value==="admin123"){
+  login.style.display="none";app.style.display="block"
+ } else alert("गलत विवरण")
+}
+function logout(){app.style.display="none";login.style.display="flex"}
+
+/* NAV */
+function show(id){
+ form.classList.add("hidden")
+ vouchers.classList.add("hidden")
+ report.classList.add("hidden")
+ document.getElementById(id).classList.remove("hidden")
+}
+
+/* DARK MODE */
+function toggleDark(){document.body.classList.toggle("dark")}
+
+/* SAVE FORM */
+function saveForm(){
+ let d={
+  work:work.value,gp:gp.value,scheme:scheme.value,
+  approved:approved.value,fy:fy.value,
+  engineer:engineer.value,officer:officer.value
+ }
+ localStorage.form=JSON.stringify(d)
+ alert("Saved")
+}
+
+/* VOUCHERS */
+let receipts=JSON.parse(localStorage.receipts||"[]")
+let payments=JSON.parse(localStorage.payments||"[]")
+
+function render(){
+ let rtbody=receiptsTable.querySelector("tbody")
+ rtbody.innerHTML=""
+ receipts.forEach((r,i)=>{
+  rtbody.innerHTML+=`<tr>
+  <td contenteditable>${r[0]}</td>
+  <td contenteditable>${r[1]}</td>
+  <td contenteditable>${r[2]}</td>
+  <td contenteditable>${r[3]}</td>
+  <td onclick="del('r',${i})">❌</td>
+  </tr>`
+ })
+
+ let ptbody=paymentsTable.querySelector("tbody")
+ ptbody.innerHTML=""
+ payments.forEach((r,i)=>{
+  ptbody.innerHTML+=`<tr>
+  <td contenteditable>${r[0]}</td>
+  <td contenteditable>${r[1]}</td>
+  <td contenteditable>${r[2]}</td>
+  <td contenteditable>${r[3]}</td>
+  <td onclick="del('p',${i})">❌</td>
+  </tr>`
+ })
+}
+render()
+
+function addRow(type){
+ if(type==="receipts")receipts.push(["","","","0"])
+ else payments.push(["","","","0"])
+ render()
+}
+
+function del(t,i){
+ if(t==="r")receipts.splice(i,1)
+ else payments.splice(i,1)
+ render()
+}
+
+function saveVouchers(){
+ let r=[]
+ receiptsTable.querySelectorAll("tbody tr").forEach(tr=>{
+  r.push([...tr.children].slice(0,4).map(x=>x.innerText))
+ })
+ receipts=r
+
+ let p=[]
+ paymentsTable.querySelectorAll("tbody tr").forEach(tr=>{
+  p.push([...tr.children].slice(0,4).map(x=>x.innerText))
+ })
+ payments=p
+
+ localStorage.receipts=JSON.stringify(receipts)
+ localStorage.payments=JSON.stringify(payments)
+
+ alert("Saved vouchers")
+}
+
+/* EXPORT CSV */
+function exportData(){
+ let csv="Type,Date,Voucher,Head,Amount\n"
+ receipts.forEach(r=>csv+="Receipt,"+r.join(",")+"\n")
+ payments.forEach(r=>csv+="Payment,"+r.join(",")+"\n")
+ let a=document.createElement("a")
+ a.href="data:text/csv;charset=utf-8,"+encodeURI(csv)
+ a.download="cashbook.csv"
+ a.click()
+}
+
+/* GENERATE REPORT */
+function generate(){
+ let f=JSON.parse(localStorage.form||"{}")
+ r_fy.innerText=f.fy||""
+ r_scheme.innerText=f.scheme||""
+ r_gp.innerText=f.gp||""
+
+ let tbody=document.getElementById("tableData")
+ tbody.innerHTML=""
+
+ let max=Math.max(receipts.length,payments.length)
+ let totalR=0,totalP=0
+
+ for(let i=0;i<max;i++){
+  let r=receipts[i]||["","","",""]
+  let p=payments[i]||["","","",""]
+  totalR+=parseFloat(r[3]||0)
+  totalP+=parseFloat(p[3]||0)
+
+  tbody.innerHTML+=`<tr>
+  <td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td colspan="2">${r[3]}</td>
+  <td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td><td colspan="2">${p[3]}</td>
+  </tr>`
+ }
+
+ totalR.innerText
+ document.getElementById("totalR").innerText="₹ "+totalR.toFixed(2)
+ document.getElementById("totalP").innerText="₹ "+totalP.toFixed(2)
+
+ let closing=totalR-totalP
+ closing=document.getElementById("closing").innerText="₹ "+closing.toFixed(2)
+ document.getElementById("closing2").innerText=closing
+
+ printArea.classList.remove("hidden")
+}
+</script>
+
+</body>
+</html>
