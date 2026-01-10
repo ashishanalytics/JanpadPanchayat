@@ -18,7 +18,8 @@ export default function Dashboard() {
   }
 
   const totalBudget = schemes.reduce((a,b)=>a + Number(b.budget||0),0);
-  const spent = cash.reduce((a,b)=>a + Number(b.amount||0),0);
+  const spent = cash.reduce((a,b)=> a + parseFloat(b.amount || 0), 0);
+
 
   return (
     <div style={{ padding:20 }}>
