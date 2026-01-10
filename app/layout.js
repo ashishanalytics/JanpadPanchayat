@@ -1,3 +1,4 @@
+"use client";
 export const metadata = {
   title: "Janpad Panchayat Takhatpur",
   description: "Government Financial Management System"
