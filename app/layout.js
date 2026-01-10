@@ -1,8 +1,4 @@
 "use client";
-export const metadata = {
-  title: "Janpad Panchayat Takhatpur",
-  description: "Government Financial Management System"
-};
 
 export default function RootLayout({ children }) {
   return (
@@ -14,6 +10,7 @@ export default function RootLayout({ children }) {
             <a href="/dashboard" style={{color:"#fff", display:"block", margin:"10px 0"}}>Dashboard</a>
             <a href="/schemes" style={{color:"#fff", display:"block", margin:"10px 0"}}>Schemes</a>
             <a href="/cashbook" style={{color:"#fff", display:"block", margin:"10px 0"}}>Cash Book</a>
+            <a href="/reports" style={{color:"#fff", display:"block", margin:"10px 0"}}>Reports</a>
           </div>
           <div style={{ flex:1, padding:20, background:"#f4f6fb" }}>
             {children}
